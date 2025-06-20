@@ -1,0 +1,299 @@
+{% extends "layout.html" %}
+
+{% block title %}Security Analysis Results - {{ data.url }}{% endblock %}
+
+{% block content %}
+<div class="results-header">
+    <div class="back-button">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Scan Another Site
+        </a>
+    </div>
+    
+    <div class="site-info">
+        <h1 class="site-url">{{ data.url }}</h1>
+        <div class="scan-meta">
+            <span class="scan-date">
+                <i class="fas fa-calendar"></i>
+                {{ data.timestamp[:19] }}
+            </span>
+            <span class="scan-id">
+                <i class="fas fa-fingerprint"></i>
+                {{ data.scan_id[:8] }}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="score-overview">
+    <div class="score-card">
+        <div class="score-visual">
+            <div class="score-circle" data-score="{{ data.overall_score }}">
+                <div class="score-number">{{ data.overall_score }}/10</div>
+                <div class="score-grade grade-{{ data.grade.lower() }}">{{ data.grade }}</div>
+            </div>
+        </div>
+        <div class="score-info">
+            <h2 class="score-title">Overall Security Score</h2>
+            <p class="score-description">
+                {% if data.overall_score >= 8 %}
+                    Excellent security configuration with minimal vulnerabilities.
+                {% elif data.overall_score >= 6 %}
+                    Good security posture with some areas for improvement.
+                {% elif data.overall_score >= 4 %}
+                    Moderate security with several issues to address.
+                {% else %}
+                    Poor security configuration requiring immediate attention.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if data.ai_analysis %}
+<div class="ai-analysis-section">
+    <h2 class="section-title">
+        <i class="fas fa-robot"></i>
+        AI Security Analysis
+    </h2>
+    
+    <div class="ai-summary">
+        <h3 class="subsection-title">Summary</h3>
+        <p class="ai-text">{{ data.ai_analysis.summary }}</p>
+    </div>
+    
+    {% if data.ai_analysis.recommendations %}
+    <div class="ai-recommendations">
+        <h3 class="subsection-title">
+            <i class="fas fa-lightbulb"></i>
+            Priority Recommendations
+        </h3>
+        <ul class="recommendations-list">
+            {% for recommendation in data.ai_analysis.recommendations %}
+            <li class="recommendation-item">
+                <i class="fas fa-check-circle"></i>
+                {{ recommendation }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    {% if data.ai_analysis.critical_risks %}
+    <div class="critical-risks">
+        <h3 class="subsection-title">
+            <i class="fas fa-exclamation-triangle"></i>
+            Critical Security Risks
+        </h3>
+        <ul class="risks-list">
+            {% for risk in data.ai_analysis.critical_risks %}
+            <li class="risk-item">
+                <i class="fas fa-triangle-exclamation"></i>
+                {{ risk }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="detailed-results">
+    <h2 class="section-title">Detailed Security Analysis</h2>
+    
+    <!-- SSL/TLS Check -->
+    <div class="check-card">
+        <div class="check-header">
+            <div class="check-title">
+                <i class="fas fa-lock"></i>
+                SSL/TLS Security
+            </div>
+            <div class="check-status status-{{ data.checks.ssl.status }}">
+                {% if data.checks.ssl.status == 'pass' %}
+                    <i class="fas fa-check-circle"></i> Secure
+                {% else %}
+                    <i class="fas fa-times-circle"></i> Issues Found
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="check-details">
+            {% if data.checks.ssl.details %}
+                <div class="ssl-details">
+                    <p><strong>Certificate Issuer:</strong> {{ data.checks.ssl.details.issuer.get('organizationName', 'Unknown') }}</p>
+                    <p><strong>Expires:</strong> {{ data.checks.ssl.details.expiry_date }}</p>
+                    <p><strong>Days Until Expiry:</strong> {{ data.checks.ssl.details.days_until_expiry }}</p>
+                </div>
+            {% endif %}
+            
+            {% if data.checks.ssl.issues %}
+                <div class="issues-list">
+                    <h4>Issues Found:</h4>
+                    <ul>
+                        {% for issue in data.checks.ssl.issues %}
+                        <li class="issue-item">{{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Security Headers Check -->
+    <div class="check-card">
+        <div class="check-header">
+            <div class="check-title">
+                <i class="fas fa-shield-halved"></i>
+                Security Headers
+            </div>
+            <div class="check-status status-{{ data.checks.headers.status }}">
+                {% if data.checks.headers.status == 'pass' %}
+                    <i class="fas fa-check-circle"></i> Good
+                {% elif data.checks.headers.status == 'warning' %}
+                    <i class="fas fa-exclamation-triangle"></i> Needs Attention
+                {% else %}
+                    <i class="fas fa-times-circle"></i> Poor
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="check-details">
+            {% if data.checks.headers.present %}
+                <div class="headers-present">
+                    <h4>Present Headers:</h4>
+                    <ul class="headers-list">
+                        {% for header in data.checks.headers.present %}
+                        <li class="header-item good">
+                            <i class="fas fa-check"></i>
+                            <strong>{{ header.header }}:</strong> {{ header.description }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            {% if data.checks.headers.missing %}
+                <div class="headers-missing">
+                    <h4>Missing Headers:</h4>
+                    <ul class="headers-list">
+                        {% for header in data.checks.headers.missing %}
+                        <li class="header-item missing">
+                            <i class="fas fa-times"></i>
+                            <strong>{{ header.header }}:</strong> {{ header.description }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Cookie Security Check -->
+    <div class="check-card">
+        <div class="check-header">
+            <div class="check-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookie Security
+            </div>
+            <div class="check-status status-{{ data.checks.cookies.status }}">
+                {% if data.checks.cookies.status == 'pass' %}
+                    <i class="fas fa-check-circle"></i> Secure
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i> Issues Found
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="check-details">
+            {% if data.checks.cookies.issues %}
+                <div class="issues-list">
+                    <h4>Cookie Issues:</h4>
+                    <ul style="margin-left: 20px;">
+                        {% for issue in data.checks.cookies.issues %}
+                        <li class="issue-item">{{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p class="no-issues">No cookie security issues found.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Mixed Content Check -->
+    <div class="check-card">
+        <div class="check-header">
+            <div class="check-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Mixed Content
+            </div>
+            <div class="check-status status-{{ data.checks.mixed_content.status }}">
+                {% if data.checks.mixed_content.status == 'pass' %}
+                    <i class="fas fa-check-circle"></i> Clean
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i> Issues Found
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="check-details">
+            {% if data.checks.mixed_content.http_resources %}
+                <div class="issues-list">
+                    <h4>HTTP Resources Found:</h4>
+                    <ul style="margin-left: 20px;">
+                        {% for resource in data.checks.mixed_content.http_resources[:5] %}
+                        <li class="issue-item">{{ resource }}</li>
+                        {% endfor %}
+                        {% if data.checks.mixed_content.http_resources|length > 5 %}
+                        <li class="issue-item">... and {{ data.checks.mixed_content.http_resources|length - 5 }} more</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% else %}
+                <p class="no-issues">No mixed content detected.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Forms Security Check -->
+    <div class="check-card">
+        <div class="check-header">
+            <div class="check-title">
+                <i class="fas fa-mb-3"></i>
+                Form Security
+            </div>
+            <div class="check-status status-{{ data.checks.forms.status }}">
+                {% if data.checks.forms.status == 'pass' %}
+                    <i class="fas fa-check-circle"></i> Secure
+                {% else %}
+                    <i class="fas fa-exclamation-triangle"></i> Issues Found
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="check-details">
+            <p><strong>Forms Found:</strong> {{ data.checks.forms.forms_found }}</p>
+            {% if data.checks.forms.issues %}
+                <div class="issues-list">
+                    <h4>Form Issues:</h4>
+                    <ul>
+                        {% for issue in data.checks.forms.issues %}
+                        <li class="issue-item">{{ issue }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p class="no-issues">No form security issues found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function printResults() {
+    window.print();
+}
+ 
+</script>
+{% endblock %}

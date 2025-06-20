@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}Website Security Checker - Analyze Your Site's Security{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <i class="fas fa-shield-alt"></i>
+            Website Security Analyzer
+        </h1>
+        <p class="hero-subtitle">
+            Get instant AI-powered security analysis for any website. 
+            Check SSL certificates, security headers, and more.
+        </p>
+    </div>
+</div>
+
+<div class="scanner-section">
+    <div class="scanner-card">
+        <h2 class="scanner-title">
+            <i class="fas fa-search"></i>
+            Analyze Website Security
+        </h2>
+        
+        <form id="scanForm" method="POST" action="{{ url_for('analyze') }}" class="scan-form">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <i class="fas fa-globe input-icon"></i>
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        name="url" 
+                        placeholder="Enter website URL (e.g., example.com)" 
+                        required
+                        class="url-input"
+                        autocomplete="url"
+                    >
+                </div>
+                <button type="submit" class="scan-button" id="scanButton">
+                    <i class="fas fa-search"></i>
+                    <span class="button-text">Analyze Security</span>
+                    <div class="loading-spinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="scan-options">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="ai-checkbox" name="include_ai" checked>
+                    <span class="checkmark"></span>
+                    Include AI-powered recommendations (requires OpenAI API key)
+                </label>
+            </div>
+            <div id="openai-key-container" style="display:none; margin-top:10px;">
+                <label for="openai-key-input" style="font-size:0.95em;">OpenAI API Key:</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-key input-icon"></i>
+                    <input 
+                        type="password" 
+                        id="openai-key-input" 
+                        name="openai_api_key" 
+                        placeholder="Enter your OpenAI API key" 
+                        class="url-input"
+                    >
+                </div>
+            </div>
+        </form>
+        
+        <div class="scan-info">
+            <p class="info-text">
+                <i class="fas fa-info-circle"></i>
+                Our analyzer checks SSL certificates, security headers, cookie configuration, and more.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <h2 class="section-title">What We Check</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3 class="feature-title">SSL/TLS Security</h3>
+            <p class="feature-description">
+                Verify SSL certificate validity, encryption strength, and expiration dates.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="feature-title">Security Headers</h3>
+            <p class="feature-description">
+                Check for HSTS, CSP, X-Frame-Options, and other important security headers.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-cookie-bite"></i>
+            </div>
+            <h3 class="feature-title">Cookie Security</h3>
+            <p class="feature-description">
+                Analyze cookie configuration for Secure, HttpOnly, and SameSite attributes.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="feature-title">Vulnerability Detection</h3>
+            <p class="feature-description">
+                Identify mixed content, insecure forms, and common web vulnerabilities.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3 class="feature-title">AI Analysis</h3>
+            <p class="feature-description">
+                Get intelligent recommendations and risk prioritization powered by AI.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="feature-title">Security Score</h3>
+            <p class="feature-description">
+                Receive an overall security grade and track improvements over time.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2 class="section-title">Try It Now</h2>
+    <p class="demo-text">Test with these example websites:</p>
+    <div class="demo-buttons">
+        <button class="demo-button" onclick="fillUrl('https://github.com')">
+            <i class="fab fa-github"></i>
+            GitHub
+        </button>
+        <button class="demo-button" onclick="fillUrl('https://stackoverflow.com')">
+            <i class="fab fa-stack-overflow"></i>
+            Stack Overflow
+        </button>
+        <button class="demo-button" onclick="fillUrl('https://badssl.com')">
+            <i class="fas fa-exclamation-triangle"></i>
+            BadSSL (Test Site)
+        </button>
+    </div>
+</div>
+
+<script>
+function fillUrl(url) {
+    document.getElementById('urlInput').value = url;
+    document.getElementById('urlInput').focus();
+}
+</script>
+{% endblock %}
