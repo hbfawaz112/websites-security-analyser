@@ -4,7 +4,7 @@ A simple yet powerful web application that analyzes websites for security vulner
 
 ![Security Checker](https://img.shields.io/badge/Security-Checker-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-3.0.0-green.svg)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--3.5-orange.svg)
+![OpenAI GPT-4.1 nano](https://img.shields.io/badge/OpenAI-GPT--4.1--nano-orange.svg)
 
 ## Features
 
