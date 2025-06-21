@@ -4,9 +4,12 @@ from datetime import datetime
 import uuid
 from modules.security_checks import SecurityChecker
 from modules.ai_analyzer import AIAnalyzer
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'dev-secret-key-change-in-production'
 
 # Initialize modules
 security_checker = SecurityChecker()
@@ -26,11 +29,9 @@ def analyze():
             data = request.get_json()
             url = data.get('url')
             openai_api_key = data.get('openai_api_key')
-            include_ai = data.get('include_ai', False)
         else:
             url = request.form.get('url')
             openai_api_key = request.form.get('openai_api_key')
-            include_ai = request.form.get('include_ai') == '1'
         
         if not url:
             return jsonify({'error': 'URL is required'}), 400
@@ -49,10 +50,8 @@ def analyze():
         # Calculate overall score
         overall_score = security_checker.calculate_risk_score(security_results)
         
-        # Get AI analysis only if checkbox is checked and API key is provided
-        ai_analysis = None
-        if include_ai and openai_api_key:
-            ai_analysis = ai_analyzer.analyze_security_results(security_results, url, api_key=openai_api_key)
+        # Get AI analysis
+        ai_analysis = ai_analyzer.analyze_security_results(security_results, url, api_key=openai_api_key)
         
         # Prepare response data
         response_data = {
@@ -117,5 +116,5 @@ if __name__ == '__main__':
     os.makedirs('static/js', exist_ok=True)
     
     # Run the application
-    debug_mode = False
-    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
+    debug_mode = os.getenv('FLASK_ENV') == 'development'
+    app.run(debug=debug_mode, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

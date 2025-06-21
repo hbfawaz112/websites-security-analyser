@@ -174,6 +174,127 @@ Edit `modules/ai_analyzer.py` to:
 - Add new recommendation categories
 - Customize scoring algorithms
 
+## AWS Deployment
+
+This application can be deployed to AWS using Docker containers and ECS Fargate. Follow these steps to deploy your application to the cloud.
+
+### Prerequisites
+
+- AWS CLI installed and configured
+- Docker Desktop installed
+- AWS account with appropriate permissions
+
+### Step 1: Install Required Tools
+
+**Install Docker Desktop:**
+- Download from [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
+- Enable **Linux containers** during installation
+
+**Install AWS CLI:**
+- Download from [AWS CLI v2 for Windows](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-windows.html)
+- Verify installation:
+  ```bash
+  docker --version
+  aws --version
+  ```
+
+### Step 2: Configure AWS CLI
+
+```bash
+aws configure
+```
+
+Enter your:
+- AWS Access Key ID
+- AWS Secret Access Key
+- Region (e.g., `eu-central-1`, `us-east-1`)
+- Output format: `json`
+
+### Step 3: Build and Tag Docker Image
+
+In your project directory:
+
+```bash
+docker build -t ai-site-analyser .
+```
+
+### Step 4: Create ECR Repository
+
+```bash
+aws ecr create-repository --repository-name ai-site-analyser
+```
+
+### Step 5: Authenticate Docker to ECR
+
+```bash
+aws ecr get-login-password --region <your-region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
+```
+
+Replace `<your-region>` and `<account-id>` with your actual values.
+
+### Step 6: Tag and Push Image to ECR
+
+```bash
+docker tag ai-site-analyser:latest <account-id>.dkr.ecr.<region>.amazonaws.com/ai-site-analyser:latest
+docker push <account-id>.dkr.ecr.<region>.amazonaws.com/ai-site-analyser:latest
+```
+
+### Step 7: Create ECS Cluster
+
+1. Go to [ECS Console](https://console.aws.amazon.com/ecs)
+2. Click **Clusters** > **Create Cluster**
+3. Select **Networking only (Fargate)**
+4. Name your cluster (e.g., `ai-site-analyser`)
+5. Click **Create**
+
+### Step 8: Create Task Definition
+
+1. Go to ECS > **Task Definitions** > **Create new**
+2. Launch type: **Fargate**
+3. Name: `ai-site-analyser`
+4. Add container:
+   - Name: `ai-site-analyser-app`
+   - Image: `<account-id>.dkr.ecr.<region>.amazonaws.com/ai-site-analyser:latest`
+   - Port mapping: `5000`
+5. Set CPU: `0.25 vCPU`, Memory: `512MB`
+6. Click **Create**
+
+### Step 9: Run the Task
+
+1. Go to **Clusters** > your cluster > **Tasks** > **Run new task**
+2. Launch type: **Fargate**
+3. Choose task definition: `ai-site-analyser`
+4. Select a **public subnet**
+5. Create or choose a **security group** with:
+   - **Inbound Rule**: HTTP (TCP/5000) from `0.0.0.0/0`
+6. Enable **Auto-assign Public IP**
+7. Click **Run Task**
+
+### Step 10: Access Your Application
+
+1. Go to the **running task** → **ENI (Elastic Network Interface)**
+2. Click to view the **public IPv4 address**
+3. Open in browser: `http://<public-ip>:5000`
+
+### Troubleshooting
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Docker daemon connection error | Docker not running | Ensure Docker Desktop is running |
+| `aws` command not found | AWS CLI not in PATH | Install AWS CLI and restart terminal |
+| ECS task times out | No public IP or wrong security group | Enable Auto-assign Public IP and check security group |
+| App only accessible locally | Flask listening on localhost | Use `host="0.0.0.0"` in `app.run()` |
+| Port blocked | Security group doesn't allow traffic | Add inbound rule for TCP:5000 from 0.0.0.0/0 |
+| Missing modules | Dependencies not installed | Ensure all packages are in `requirements.txt` |
+
+### Production Considerations
+
+- **Load Balancer**: Use Application Load Balancer for better traffic management
+- **Auto Scaling**: Configure ECS Service with auto-scaling policies
+- **Monitoring**: Set up CloudWatch logs and metrics
+- **SSL/TLS**: Use Application Load Balancer with SSL certificate
+- **Domain**: Configure custom domain with Route 53
+
 ## Acknowledgments
 
 - [OpenAI](https://openai.com/) for AI-powered analysis
